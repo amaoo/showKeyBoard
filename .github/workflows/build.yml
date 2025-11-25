@@ -1,0 +1,57 @@
+name: Build showKeyBoard EXE
+
+on:
+#  push:
+#    branches: [ master ]
+#  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 安装 Node
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # 构建 http 服务端
+      - name: Build http
+        working-directory: ./http
+        run: |
+          npm install
+          npm run build
+
+      # 构建 ui-helper 前端
+      - name: Build ui-helper
+        working-directory: ./ui-helper
+        run: |
+          npm install
+          npm run build
+
+      # 把 ui-helper 构建结果拷贝到 httpdist (与 README 要求一致)
+      - name: Copy ui dist into httpdist
+        run: |
+          powershell New-Item -ItemType Directory -Force -Path http/httpdist/dist/ui
+          powershell Copy-Item ui-helper/dist/* http/httpdist/dist/ui -Recurse -Force
+
+      # 使用 ahk2exe action 构建 .exe
+      - name: Compile AHK to EXE
+        uses: nekocodeX/ahk2exe@v1
+        with:
+          in: showKeyBoard.ahk       # 输入 AHK 文件
+          out: showKeyBoard.exe     # 输出 EXE 文件
+          icon: icon.ico            # 可选图标文件，没有就删除此行
+          base: AutoHotkey64.exe    # 可选，自行改为你 prefer 的 Base EXE
+
+      # 上传构建结果
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: showKeyBoard-exe
+          path: showKeyBoard.exe
