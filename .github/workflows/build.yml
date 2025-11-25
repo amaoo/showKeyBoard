@@ -32,14 +32,14 @@ jobs:
         working-directory: ./ui-helper
         run: |
           npm install
-          npm run build
-
+          npm run build:prod
+          
       # 把 ui-helper 构建结果拷贝到 httpdist (与 README 要求一致)
       - name: Copy ui dist into httpdist
         run: |
-          powershell New-Item -ItemType Directory -Force -Path http/httpdist/dist/ui
-          powershell Copy-Item ui-helper/dist/* http/httpdist/dist/ui -Recurse -Force
-
+          powershell New-Item -ItemType Directory -Force -Path http\httpdist\dist\ui
+          powershell Copy-Item ui-helper\dist\* http\httpdist\dist\ui -Recurse -Force
+          
       # 使用 ahk2exe action 构建 .exe
       - name: Compile AHK to EXE
         uses: nekocodeX/GitHub-Action-Ahk2Exe@main
